@@ -1,0 +1,79 @@
+apply plugin: 'com.android.library'
+apply from: "../../build.gradle"
+
+group = localExtensions.groups.Main
+version = "1.2.0"
+
+android {
+    compileSdkVersion localExtensions.sdks.CompileSDK
+    buildToolsVersion localExtensions.sdks.BuildTool
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+
+            // According to https://developer.android.com/studio/releases/gradle-plugin#cmake-imported-targets
+            // when >= `com.android.tools.build:gradle:4.0.0` (means RN >= 0.64) in `/androidbuild.gradle`,
+            // with `jniLibs.srcDirs` below will cause compile error `More than one file was found with OS independent path 'lib/armeabi-v7a/libfreetype.so'`.
+            // When >= `com.android.tools.build:gradle:3.5.0` (means RN >= 0.62) in `/androidbuild.gradle`.
+            // without `jniLibs.srcDirs` below can pass compile but will run crash `java.lang.UnsatisfiedLinkError: No implementation found for void com.taobao.gcanvas.GCanvasJNI.setContextType`.
+            // Since RN 0.64.0 use FLIPPER_VERSION 0.75.1 so comes the `compareTo`.
+            if ("${FLIPPER_VERSION}".compareTo('0.75.0') < 0) {
+                jniLibs.srcDirs '../../core/android/freetype-prebuilt/libs'
+            }
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+        }
+        release {
+            debuggable false
+        }
+    }
+
+    defaultConfig {
+        minSdkVersion localExtensions.sdks.MinSDK
+        targetSdkVersion localExtensions.sdks.TargetSDK
+
+        consumerProguardFiles 'proguard-rules.txt'
+        externalNativeBuild {
+            cmake {
+                arguments  '-DGCANVAS_WEEX=1'
+            }
+
+            ndk {
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
+            }
+        }
+    }
+
+
+    externalNativeBuild {
+        cmake {
+            path file('../../CMakeLists.txt')
+        }
+    }
+
+
+    if (localExtensions.sdks.EXCLUDE_CPP_SHARED) {
+        packagingOptions {
+            exclude '**/libc++_shared.so'
+            exclude '**/**/libc++_shared.so'
+        }
+    }
+}
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.alibaba:fastjson:1.1.54.android'
+}
+project.ext.id = localExtensions.artifacts.Core
+project.ext.meta.labels = ['Weex', 'ReactNative', 'GPU', 'OpenGL', 'GCanvas', "canvas", 'WebGL', 'Rendering', 'High Performance']
+project.ext.meta.description = 'This package defines GCanvas main library.'
+// apply from: "../../publish.gradle"
