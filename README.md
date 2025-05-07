@@ -8,6 +8,9 @@ In a front-end part, I worked with other front-end developers and designer to ma
 In the back-end part, I worked with senior developer in my client company, and dedicated into extract external API into our application which containing all data related to athletes.
 
 # User Guide of the application
+user guide 
+https://pxl.to/4rojkg9 
+
 
 # Design
 ![image](https://github.com/user-attachments/assets/b0861a12-bd83-418b-8db6-f97ffef504ff)
